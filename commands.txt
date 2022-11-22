@@ -1,0 +1,73 @@
+TOPIC: Networking >> SSH
+Once you have installed an OpenSSH server,
+$ sudo apt-get install openssh-server 
+
+you will need to configure it by editing the sshd_config file in the /etc/ssh directory.
+
+(sshd_config is the configuration file for the OpenSSH server. ssh_config is the configuration file for the OpenSSH client. Make sure not to get them mixed up.)
+First, make a backup of your sshd_config file by copying it to your home directory, or by making a read-only copy in /etc/ssh by doing:
+
+$ sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.factory-defaults
+$ sudo chmod a-w /etc/ssh/sshd_config.factory-defaults
+
+Creating a read-only backup in /etc/ssh means you'll always be able to find a known-good configuration when you need it.
+Once you've backed up your sshd_config file, you can make changes with any text editor, for example;
+
+$ sudo gedit /etc/ssh/sshd_config
+
+runs the standard text editor in Ubuntu 12.04 or more recent. For older versions replace "sudo" with "gksudo". Once you've made your changes (see the suggestions in the rest of this page), you can apply them by saving the file then doing:
+
+$ sudo restart ssh
+
+If you get the error, "Unable to connect to Upstart", restart ssh with the following:
+
+$ sudo systemctl restart ssh
+
+Specify Which Accounts Can Use SSH
+It's recommended to specify which accounts can use SSH if only a few users want (not) to use SSH.
+To allow only the users Fred and Wilma to connect to your computer, add the following line to the bottom of the sshd_config file:
+
+AllowUsers Fred Wilma
+
+To allow everyone except the users Dino and Pebbles to connect to your computer, add the following line to the bottom of the sshd_config file:
+
+DenyUsers Dino Pebbles
+
+
+
+TOPIC:Mount WindowsShares Permanently
+
+Prerequisites
+We're assuming that: Network connections have been configured properly.
+
+CIFS installation
+$sudo apt-get install cifs-utils
+
+On older systems:
+$ sudo apt-get install smbfs
+
+Mounting unprotected (guest) network folders
+First, let's create the mount directory. You will need a separate directory for each mount.
+
+$ sudo mkdir /media/windowsshare
+
+Then edit your /etc/fstab file (with root privileges) to add this line:
+//servername/sharename  /media/windowsshare  cifs  guest,uid=1000,iocharset=utf8  0  0
+
+Where:
+guest indicates you don't need a password to access the share,
+uid=1000 makes the Linux user specified by the id the owner of the mounted share, allowing them to rename files,
+iocharset=utf8 allows access to files with names in non-English languages. This doesn't work with shares of devices like the Buffalo Tera Station, or Windows machines that export their shares using ISO8895-15.
+If there is any space in the server path, you need to replace it by \040, for example //servername/My\040Documents
+
+After you add the entry to /etc/fstab type:
+$ sudo mount -a
+
+This will (re)mount all entries listed in /etc/fstab.
+
+NOTE:
+Mount password protected network folders
+The quickest way to auto-mounting a password-protected share is to edit /etc/fstab (with root privileges), to add this line:
+
+//servername/sharename  /media/windowsshare  cifs  username=msusername,password=mspassword,iocharset=utf8  0  0
+This is not a good idea however: /etc/fstab is readable by everyone and so is your Windows password in it. The way around this is to use a credentials file. This is a file that contains just the username and password.
