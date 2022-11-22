@@ -2,7 +2,6 @@ TOPIC1: Create several directories at once
 
 $ mkdir -p parent_directory{dir1,dir2,dir3}
 
-
 To create a new directory with multiple subdirectories you only need to type the following command at the prompt and press Enter (obviously, change the directory names to what you want).
 
 $ mkdir -p htg/{articles,images,note,done}
@@ -15,7 +14,6 @@ You can also use the full path if you want, as I’ve done in the example below:
 
 $ mkdir -p ~/Documents/htg/{articles/{new,rewrites},images,notes,done}
 The four subdirectories are created under the htg directory and then the two subdirectories, new and rewrites, are created under the articles subdirectory.
-
 
 TOPIC2: Using lsblk Command
 
@@ -33,13 +31,13 @@ TOPIC3: How to mount disk partition using UUID in Linux
 
 Create folder to mount the partition into if not already exist.
 $ sudo mkdir -p /mnt/uuidtest
+-p: A flag which enables the command to create parent directories as necessary. If the directories exist, no error is specified. 
 
 Manually mount partition using UUID to test.
 $ sudo mount UUID=39ea80c4-e748-47eb-835c-64025de53e26 /mnt/uuidtest 
 
 Unmount the newly mounted filesystem.
 $ sudo umount /mnt/uuidtest
-
 
 IF EVERYTHING IS FINE THEN MODIFY OR FOLLOW NEXT
 
@@ -49,16 +47,32 @@ $ sudo vi /etc/fstab
 Add entry to etc/fstab specifying UUID value in the first field (block special device).
 UUID=39ea80c4-e748-47eb-835c-64025de53e26       /mnt/uuidtest   ext4    defaults          0    1
 
-
-
 *** BEFORE REBOOT THE SYSTEM ***
 *** PLEASE TEST  fstab *********
 
 We always want to test the fstab before rebooting (an incorrect fstab can render a disk unbootable).  To test do:
 $ findmnt --verify
 
+Is the on-disk filesystem type something different from the filesystem type of the partition? --> NO.
+
+is the warning legit or a missing feature/bug? --> Legit but somewhat misleading. It could be findmnt: /dev/sdb2: Permission denied.
+
+Regular users cannot read /dev/sdb2 directly, so the tool cannot verify if the device holds a filesystem that matches the corresponding fstab entry. Run sudo findmnt --verify. The tool will be allowed to examine /dev/sdb2.
 check the last line for errors.  Warnings can help in improving your fstab.
 
-Unmounting drive with umount
-You can unmount drives using umount.  For example, to unmount the data drive above mount at /media/data you would do:
-$ sudo umount /media/data
+
+Explanation:
+A simple /etc/fstab, using file system UUIDs:
+
+/etc/fstab
+# <device>                                <dir> <type> <options> <dump> <fsck>
+UUID=0a3407de-014b-458b-b5c1-848e92a327a3 /     ext4   noatime   0      1
+UUID=f9fe0b69-a280-415d-a03a-a32752370dee none  swap   defaults  0      0
+UUID=b411dc99-f0a0-4c87-9e05-184977be8539 /home ext4   noatime   0      2
+
+<device> describes the block special device or remote file system to be mounted; see #Identifying file systems.
+<dir> describes the mount directory.
+<type> the file system type.
+<options> the associated mount options; see mount(8) § FILESYSTEM-INDEPENDENT_MOUNT_OPTIONS and ext4(5) § MOUNT_OPTIONS.
+<dump> is checked by the dump(8) utility. This field is usually set to 0, which disables the check.
+<fsck> sets the order for file system checks at boot time; see fsck(8). For the root device it should be 1. For other partitions it should be 2, or 0 to disable checking.
