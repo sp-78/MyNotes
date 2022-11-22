@@ -1,0 +1,64 @@
+TOPIC1: Create several directories at once
+
+$ mkdir -p parent_directory{dir1,dir2,dir3}
+
+
+To create a new directory with multiple subdirectories you only need to type the following command at the prompt and press Enter (obviously, change the directory names to what you want).
+
+$ mkdir -p htg/{articles,images,note,done}
+The -p flag tells the mkdir command to create the main directory first if it doesn’t already exist (htg, in our case). The words in the brackets are part of the “brace expansion list”. Each of the items in the brace expansion list is appended separately to the preceding path (htg/).
+
+You can also nest brace expansion lists in the mkdir command. For example, in the articles subdirectory under the htg directory, we want to create two subdirectories called new and rewritten. So, we type the following command at the prompt and press Enter.
+
+$ mkdir -p htg/{articles/{new,rewrites},images,notes,done}
+You can also use the full path if you want, as I’ve done in the example below:
+
+$ mkdir -p ~/Documents/htg/{articles/{new,rewrites},images,notes,done}
+The four subdirectories are created under the htg directory and then the two subdirectories, new and rewrites, are created under the articles subdirectory.
+
+
+TOPIC2: Using lsblk Command
+
+lsblk displays 
+1 block devices,
+2 UUID
+3 FSTYPE
+4 LABEL
+
+when used with the -f option, it prints file system type on partitions as well:
+
+$ lsblk -f
+
+TOPIC3: How to mount disk partition using UUID in Linux
+
+Create folder to mount the partition into if not already exist.
+$ sudo mkdir -p /mnt/uuidtest
+
+Manually mount partition using UUID to test.
+$ sudo mount UUID=39ea80c4-e748-47eb-835c-64025de53e26 /mnt/uuidtest 
+
+Unmount the newly mounted filesystem.
+$ sudo umount /mnt/uuidtest
+
+
+IF EVERYTHING IS FINE THEN MODIFY OR FOLLOW NEXT
+
+Open /etc/fstab using your preferred text editor.
+$ sudo vi /etc/fstab
+
+Add entry to etc/fstab specifying UUID value in the first field (block special device).
+UUID=39ea80c4-e748-47eb-835c-64025de53e26       /mnt/uuidtest   ext4    defaults          0    1
+
+
+
+*** BEFORE REBOOT THE SYSTEM ***
+*** PLEASE TEST  fstab *********
+
+We always want to test the fstab before rebooting (an incorrect fstab can render a disk unbootable).  To test do:
+$ findmnt --verify
+
+check the last line for errors.  Warnings can help in improving your fstab.
+
+Unmounting drive with umount
+You can unmount drives using umount.  For example, to unmount the data drive above mount at /media/data you would do:
+$ sudo umount /media/data
